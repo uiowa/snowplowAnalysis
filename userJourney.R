@@ -38,8 +38,8 @@ getUserJourney = function(data, user.id) {
 # Attempting to grab an applied prospective student's user journey #
 ####################################################################
 ##
-# Let's look at October
-filename <- filenames[3]
+# Let's look at March
+filename <- filenames[8]
 data <- read.csv(filename)
 
 # Grab user ids for anyone who submitted an application form in this time.
@@ -113,8 +113,10 @@ get_events <- function(filename) {
   # Filter on our user.id, network.ids, and domain.ids.
   temp_data %<>% filter(
     user_id == user.id |
-      (network_userid != '' & network_userid %in% network.ids$network_userid) |
-      (domain_userid != '' & domain_userid %in% domain.ids$domain_userid)
+      # Match a non-null network or domain userid, with either a null or known user id.
+      (network_userid != '' & network_userid %in% network.ids$network_userid & (user_id %in% c(user.id, ''))) |
+      (domain_userid != '' & domain_userid %in% domain.ids$domain_userid & (user_id %in% c(user.id, ''))) |
+      (network_userid != '' & network_userid %in% domain.ids$domain_userid)
     )
 
   events <<- rbind(events, temp_data)
@@ -123,6 +125,7 @@ get_events <- function(filename) {
 # Now for the workhorse:
 lapply(filenames, get_events)
 
+write.csv(events, 'test_journey_march_user1_netAndDomainCombo.csv')
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#\  *
 #///////////////////////////////////////# \|#|
 # AND WE ARE DONE. WERE WE SUCCESSFUL?! #  |#|
